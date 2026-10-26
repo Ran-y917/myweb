@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="CodeVerse · 终端诗学 — 一个为热爱代码的人打造的技术博客社区，含首页、社区、问答搜索、个人主页与界面介绍。">
+<title>CodeVerse · 终端诗学 — 技术博客</title>
+<style>
+/* ============ Design Tokens ============ */
+:root{
+  --bg-0:#0a0e1a; --bg-1:#111830; --bg-2:#182142;
+  --ink:#e8ecf8; --ink-2:#aab4d4; --ink-3:#8290b4;
+  --amber:#ffb454; --mint:#4ade80; --violet:#a78bfa; --rose:#fb7185; --cyan:#67e8f9;
+  --amber-ink:#1a1206;
+  --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
+  --glass:rgba(17,24,48,.72);
+  --shadow:0 12px 32px rgba(2,6,18,.55);
+  --r-lg:16px; --r-md:12px; --r-sm:8px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  --font-mono:'JetBrains Mono','SF Mono','Cascadia Code',Consolas,'Courier New',monospace;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+  --sidebar-w:236px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg-0);color:var(--ink);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{ /* 径向辉光 */
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(900px 480px at 78% -10%, rgba(167,139,250,.14), transparent 60%),
+    radial-gradient(700px 420px at 12% 110%, rgba(255,180,84,.10), transparent 60%),
+    radial-gradient(600px 400px at 90% 90%, rgba(103,232,249,.07), transparent 60%);
+}
+#bg-particles{position:fixed;inset:0;z-index:-1;pointer-events:none}
+::selection{background:rgba(255,180,84,.35);color:#fff}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;border:2px solid var(--bg-0)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 布局骨架 ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);z-index:40;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-right:1px solid var(--line);display:flex;flex-direction:column;padding:var(--s5) var(--s4);
+}
+.logo{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s2) var(--s5)}
+.logo-mark{
+  width:40px;height:40px;border-radius:var(--r-sm);flex:none;
+  background:linear-gradient(135deg,var(--amber),#ff8a3d);
+  display:grid;place-items:center;font-family:var(--font-mono);font-weight:700;
+  color:var(--amber-ink);font-size:18px;box-shadow:0 4px 18px rgba(255,180,84,.35);
+}
+.logo-text b{font-size:17px;letter-spacing:.5px;display:block}
+.logo-text span{font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+.nav{display:flex;flex-direction:column;gap:var(--s1);margin-top:var(--s2)}
+.nav-btn{
+  display:flex;align-items:center;gap:var(--s3);padding:11px 14px;border:none;background:transparent;
+  color:var(--ink-2);border-radius:var(--r-md);font-size:14.5px;text-align:left;
+  transition:background .2s,color .2s;position:relative;
+}
+.nav-btn .ico{width:20px;text-align:center;font-size:15px;flex:none}
+.nav-btn:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+.nav-btn[aria-current="page"]{background:rgba(255,180,84,.12);color:var(--amber);font-weight:600}
+.nav-btn[aria-current="page"]::before{
+  content:'';position:absolute;left:-16px;top:20%;bottom:20%;width:3px;border-radius:3px;background:var(--amber);
+}
+.side-foot{margin-top:auto;padding:var(--s4) var(--s2) 0;border-top:1px solid var(--line)}
+.side-foot .hint{font-size:11.5px;color:var(--ink-3);font-family:var(--font-mono);line-height:1.8}
+.side-foot .hint b{color:var(--mint);font-weight:600}
+
+.main{flex:1;margin-left:var(--sidebar-w);padding:var(--s6) clamp(var(--s4),4vw,var(--s7)) 140px;max-width:1440px}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s6);
+}
+.crumb{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-3)}
+.crumb b{color:var(--amber);font-weight:600}
+.top-actions{display:flex;gap:var(--s2);align-items:center}
+.icon-btn{
+  background:var(--bg-1);border:1px solid var(--line);color:var(--ink-2);
+  border-radius:var(--r-sm);padding:8px 12px;font-size:13px;transition:border-color .2s,color .2s;
+}
+.icon-btn:hover{border-color:var(--line-strong);color:var(--ink)}
+
+/* ============ 页面切换 ============ */
+.page{display:none;animation:pageIn .45s cubic-bezier(.22,.9,.34,1)}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.page-head{margin-bottom:var(--s5)}
+.page-head h1{font-size:26px;letter-spacing:.3px}
+.page-head p{color:var(--ink-2);font-size:14px;margin-top:var(--s2);max-width:640px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:var(--s2)}
+
+/* ============ 通用组件 ============ */
+.glass{
+  background:var(--glass);border:1px solid var(--line);border-radius:var(--r-lg);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);
+}
+.chip{
+  background:var(--bg-1);border:1px solid var(--line);color:var(--ink-2);
+  border-radius:999px;padding:6px 14px;font-size:13px;transition:all .2s;
+}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.chip[aria-pressed="true"],.chip.on{background:rgba(255,180,84,.14);border-color:rgba(255,180,84,.5);color:var(--amber);font-weight:600}
+.btn-primary{
+  background:var(--amber);color:var(--amber-ink);border:none;border-radius:var(--r-md);
+  padding:12px 22px;font-size:14.5px;font-weight:700;transition:transform .15s,box-shadow .2s;
+  box-shadow:0 6px 20px rgba(255,180,84,.28);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,180,84,.4)}
+.tag{
+  display:inline-block;font-family:var(--font-mono);font-size:11px;padding:2px 9px;border-radius:6px;
+  background:rgba(255,255,255,.07);color:var(--ink-2);border:1px solid var(--line);
+}
+.tag.c-amber{color:var(--amber);border-color:rgba(255,180,84,.35);background:rgba(255,180,84,.08)}
+.tag.c-mint{color:var(--mint);border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.08)}
+.tag.c-violet{color:var(--violet);border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.08)}
+.tag.c-rose{color:var(--rose);border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.08)}
+.tag.c-cyan{color:var(--cyan);border-color:rgba(103,232,249,.35);background:rgba(103,232,249,.08)}
+
+/* ============ 首页 ============ */
+.hero{
+  position:relative;overflow:hidden;padding:clamp(var(--s5),5vw,var(--s7));
+  display:grid;grid-template-columns:1.15fr .85fr;gap:var(--s6);align-items:center;
+}
+.hero::after{
+  content:'';position:absolute;top:-40%;right:-10%;width:60%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,180,84,.12),transparent 65%);pointer-events:none;
+}
+.hero-kicker{font-family:var(--font-mono);font-size:12.5px;color:var(--mint);margin-bottom:var(--s3)}
+.hero h1{font-size:clamp(28px,3.4vw,42px);line-height:1.28;letter-spacing:.5px;min-height:2.6em}
+.hero h1 .cursor{display:inline-block;width:.55em;height:1.05em;background:var(--amber);margin-left:4px;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero p.lead{color:var(--ink-2);font-size:15px;margin:var(--s4) 0 var(--s5);max-width:480px}
+.hero-cta{display:flex;gap:var(--s3);flex-wrap:wrap}
+.btn-ghost{
+  background:transparent;border:1px solid var(--line-strong);color:var(--ink);
+  border-radius:var(--r-md);padding:12px 22px;font-size:14.5px;transition:all .2s;
+}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
+.hero-stats{display:flex;gap:var(--s6);margin-top:var(--s6);flex-wrap:wrap}
+.stat b{font-family:var(--font-mono);font-size:22px;color:var(--amber);display:block}
+.stat span{font-size:12px;color:var(--ink-3)}
+/* 代码窗口 */
+.code-window{
+  background:#0d1326;border:1px solid var(--line-strong);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);overflow:hidden;font-family:var(--font-mono);font-size:13px;
+}
+.code-titlebar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.03)}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#fb7185}.dot.y{background:#ffb454}.dot.g{background:#4ade80}
+.code-titlebar span{margin-left:auto;font-size:11px;color:var(--ink-3)}
+.code-body{padding:20px 18px;line-height:1.9;color:var(--ink-2);overflow-x:auto}
+.code-body .k{color:var(--violet)} .code-body .s{color:var(--mint)}
+.code-body .f{color:var(--cyan)} .code-body .c{color:var(--ink-3);font-style:italic}
+.code-body .n{color:var(--amber)}
+/* 分区标题 */
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);margin:var(--s7) 0 var(--s4)}
+.section-head h2{font-size:20px}
+.section-head .more{font-size:13px;color:var(--ink-3);font-family:var(--font-mono)}
+.article-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:var(--s4)}
+.card{
+  padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3);
+  transition:transform .25s cubic-bezier(.22,.9,.34,1),border-color .25s;
+}
+.card:hover{transform:translateY(-5px);border-color:var(--line-strong)}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap}
+.card h3{font-size:16.5px;line-height:1.5;font-weight:600}
+.card p{font-size:13.5px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-foot{display:flex;align-items:center;gap:var(--s3);margin-top:auto;padding-top:var(--s3);border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);font-family:var(--font-mono)}
+.card-foot .spacer{margin-left:auto}
+.avatar{
+  width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:11px;font-weight:700;color:#0a0e1a;
+}
+
+/* ============ 社区 ============ */
+.post-list{display:flex;flex-direction:column;gap:var(--s3)}
+.post{
+  display:flex;gap:var(--s4);padding:var(--s4) var(--s5);align-items:flex-start;
+  transition:border-color .2s,background .2s;
+}
+.post:hover{border-color:var(--line-strong);background:rgba(255,255,255,.02)}
+.post .p-type{flex:none;width:52px;text-align:center;font-family:var(--font-mono);font-size:11px;padding:5px 0;border-radius:var(--r-sm);margin-top:2px}
+.post .p-type.discuss{background:rgba(255,180,84,.12);color:var(--amber)}
+.post .p-type.help{background:rgba(251,113,133,.12);color:var(--rose)}
+.post .p-type.share{background:rgba(74,222,128,.12);color:var(--mint)}
+.post .p-type.job{background:rgba(167,139,250,.12);color:var(--violet)}
+.post-body{flex:1;min-width:0}
+.post-body h3{font-size:15.5px;font-weight:600}
+.post-body .p-excerpt{font-size:13px;color:var(--ink-2);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-meta{display:flex;gap:var(--s4);font-size:12px;color:var(--ink-3);margin-top:8px;font-family:var(--font-mono);flex-wrap:wrap}
+.like-btn{
+  flex:none;background:transparent;border:1px solid var(--line);color:var(--ink-3);
+  border-radius:999px;padding:6px 13px;font-size:12.5px;display:flex;gap:6px;align-items:center;
+  transition:all .2s;margin-top:4px;font-family:var(--font-mono);
+}
+.like-btn:hover{border-color:var(--rose);color:var(--rose)}
+.like-btn[aria-pressed="true"]{background:rgba(251,113,133,.14);border-color:rgba(251,113,133,.5);color:var(--rose)}
+
+/* ============ 问答·搜索 ============ */
+.search-box{padding:var(--s6);display:flex;flex-direction:column;gap:var(--s4)}
+.search-row{display:flex;gap:var(--s3)}
+.search-input{
+  flex:1;background:var(--bg-0);border:1px solid var(--line-strong);color:var(--ink);
+  border-radius:var(--r-md);padding:14px 18px;font-size:15px;font-family:inherit;min-width:0;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,180,84,.15)}
+.search-input::placeholder{color:var(--ink-3)}
+.hot-row{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
+.hot-row .lbl{font-size:12px;color:var(--ink-3);font-family:var(--font-mono);margin-right:4px}
+.hot-chip{
+  background:transparent;border:1px dashed var(--line-strong);color:var(--ink-2);
+  border-radius:999px;padding:5px 13px;font-size:12.5px;transition:all .2s;
+}
+.hot-chip:hover{border-color:var(--cyan);color:var(--cyan);border-style:solid}
+.two-col{display:grid;grid-template-columns:300px 1fr;gap:var(--s4);align-items:start;margin-top:var(--s4)}
+.history-panel{padding:var(--s5)}
+.history-panel h3{font-size:14px;margin-bottom:var(--s3);display:flex;justify-content:space-between;align-items:center}
+.clear-btn{background:none;border:none;color:var(--ink-3);font-size:12px;text-decoration:underline;font-family:var(--font-mono)}
+.clear-btn:hover{color:var(--rose)}
+.history-item{
+  display:flex;align-items:center;gap:var(--s2);padding:8px 10px;border-radius:var(--r-sm);
+  font-size:13px;color:var(--ink-2);width:100%;background:transparent;border:none;text-align:left;
+  transition:background .15s,color .15s;
+}
+.history-item:hover{background:rgba(255,255,255,.05);color:var(--ink)}
+.history-item .h-time{margin-left:auto;font-size:11px;color:var(--ink-3);font-family:var(--font-mono);flex:none}
+.history-item .h-del{flex:none;background:none;border:none;color:var(--ink-3);font-size:14px;padding:2px 4px;border-radius:4px;opacity:.7}
+.history-item .h-del:hover{color:var(--rose);opacity:1}
+.history-empty{font-size:12.5px;color:var(--ink-3);font-family:var(--font-mono);padding:var(--s2) 0}
+.result-head{font-size:13px;color:var(--ink-3);font-family:var(--font-mono);margin-bottom:var(--s3)}
+.result-head b{color:var(--amber)}
+.qa-list{display:flex;flex-direction:column;gap:var(--s3)}
+.qa{padding:var(--s4) var(--s5);display:flex;gap:var(--s4);transition:border-color .2s}
+.qa:hover{border-color:var(--line-strong)}
+.qa-votes{flex:none;text-align:center;font-family:var(--font-mono);min-width:56px;padding-top:4px}
+.qa-votes b{display:block;font-size:18px;color:var(--mint)}
+.qa-votes span{font-size:11px;color:var(--ink-3)}
+.qa-body{flex:1;min-width:0}
+.qa-body h3{font-size:15.5px;font-weight:600;line-height:1.5}
+.qa-body .qa-excerpt{font-size:13px;color:var(--ink-2);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qa-meta{display:flex;gap:var(--s3);align-items:center;margin-top:8px;font-size:12px;color:var(--ink-3);font-family:var(--font-mono);flex-wrap:wrap}
+.qa-answers{flex:none;font-family:var(--font-mono);font-size:12px;color:var(--cyan);border:1px solid rgba(103,232,249,.3);border-radius:var(--r-sm);padding:5px 10px;margin-top:4px;align-self:flex-start}
+.empty-state{padding:var(--s7) var(--s5);text-align:center;color:var(--ink-3);font-family:var(--font-mono);font-size:13px}
+mark{background:rgba(255,180,84,.3);color:var(--amber);border-radius:3px;padding:0 2px}
+
+/* ============ 我的 ============ */
+.profile-banner{
+  position:relative;overflow:hidden;padding:var(--s7) var(--s6) var(--s6);
+}
+.profile-banner::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,rgba(255,180,84,.16),rgba(167,139,250,.14) 50%,rgba(103,232,249,.1));
+}
+.profile-row{position:relative;display:flex;gap:var(--s5);align-items:flex-end;flex-wrap:wrap}
+.profile-ava{
+  width:92px;height:92px;border-radius:26px;flex:none;
+  background:linear-gradient(135deg,var(--amber),var(--violet));
+  display:grid;place-items:center;font-size:34px;font-weight:800;color:#141021;
+  border:3px solid rgba(255,255,255,.25);box-shadow:0 10px 30px rgba(167,139,250,.35);
+}
+.profile-info h2{font-size:24px}
+.profile-info .p-bio{color:var(--ink-2);font-size:13.5px;margin-top:4px;max-width:520px}
+.profile-badges{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.profile-stats{display:flex;gap:var(--s6);position:relative;margin-top:var(--s5);flex-wrap:wrap}
+.profile-stats .stat b{color:var(--ink);font-size:20px}
+.profile-stats .stat b em{font-style:normal;color:var(--amber)}
+.me-tabs{display:flex;gap:var(--s2);margin:var(--s5) 0 var(--s4);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.me-tab{
+  background:none;border:none;color:var(--ink-3);font-size:14px;padding:10px 16px;position:relative;transition:color .2s;
+}
+.me-tab:hover{color:var(--ink)}
+.me-tab[aria-selected="true"]{color:var(--amber);font-weight:600}
+.me-tab[aria-selected="true"]::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:2px;background:var(--amber)}
+.me-panel{display:none;animation:pageIn .35s ease}
+.me-panel.active{display:block}
+.me-list{display:flex;flex-direction:column;gap:var(--s3)}
+.me-item{display:flex;gap:var(--s4);padding:var(--s4) var(--s5);align-items:center;transition:border-color .2s}
+.me-item:hover{border-color:var(--line-strong)}
+.me-item .mi-body{flex:1;min-width:0}
+.me-item .mi-body h4{font-size:14.5px;font-weight:600}
+.me-item .mi-body p{font-size:12px;color:var(--ink-3);font-family:var(--font-mono);margin-top:2px}
+.follower-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s3)}
+.follower{padding:var(--s4);display:flex;gap:var(--s3);align-items:center;transition:border-color .2s}
+.follower:hover{border-color:var(--line-strong)}
+.follower b{font-size:13.5px;display:block}
+.follower span{font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+
+/* ============ 界面介绍 ============ */
+.about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s4)}
+.about-card{padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3)}
+.about-card .a-ico{
+  width:44px;height:44px;border-radius:var(--r-md);display:grid;place-items:center;font-size:20px;
+  background:rgba(255,180,84,.12);border:1px solid rgba(255,180,84,.3);
+}
+.about-card h3{font-size:15.5px}
+.about-card p{font-size:13px;color:var(--ink-2)}
+.philosophy{padding:var(--s6);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s6)}
+.philosophy blockquote{font-size:14.5px;color:var(--ink-2);border-left:3px solid var(--amber);padding-left:var(--s4);line-height:1.9}
+.philosophy blockquote b{color:var(--ink)}
+.token-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:var(--s3)}
+.token-cell{padding:var(--s3);border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg-1)}
+.token-swatch{height:44px;border-radius:var(--r-sm);margin-bottom:var(--s2);border:1px solid rgba(255,255,255,.1)}
+.token-cell b{font-family:var(--font-mono);font-size:12px;display:block}
+.token-cell span{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3)}
+.stack-row{display:flex;gap:var(--s2);flex-wrap:wrap}
+.spec-list{padding:var(--s5) var(--s6)}
+.spec-list li{list-style:none;display:flex;gap:var(--s3);padding:var(--s3) 0;border-bottom:1px dashed var(--line);font-size:13.5px;color:var(--ink-2)}
+.spec-list li:last-child{border-bottom:none}
+.spec-list li b{color:var(--ink);flex:none;width:110px;font-family:var(--font-mono);font-size:12.5px}
+.spec-list li code{font-family:var(--font-mono);color:var(--cyan);font-size:12.5px}
+
+/* ============ 音乐坞 ============ */
+.music-dock{
+  position:fixed;right:var(--s5);bottom:var(--s5);z-index:60;width:320px;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);
+  padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+}
+.md-top{display:flex;align-items:center;gap:10px}
+.md-disc{
+  width:38px;height:38px;border-radius:50%;flex:none;position:relative;
+  background:conic-gradient(from 0deg,#2a3358,#111830,#2a3358,#111830,#2a3358);
+  border:2px solid rgba(255,180,84,.4);display:grid;place-items:center;
+}
+.md-disc::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.md-disc.spin{animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.md-info{flex:1;min-width:0}
+.md-info b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.md-info span{font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+.md-controls{display:flex;gap:6px}
+.md-btn{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--line-strong);
+  background:transparent;color:var(--ink-2);display:grid;place-items:center;font-size:12px;transition:all .2s;
+}
+.md-btn:hover{border-color:var(--amber);color:var(--amber)}
+.md-btn.play{background:var(--amber);color:var(--amber-ink);border-color:var(--amber);font-size:13px;width:38px;height:38px}
+.md-btn.play:hover{color:var(--amber-ink);box-shadow:0 4px 14px rgba(255,180,84,.45)}
+.md-viz{width:100%;height:26px;display:block;border-radius:6px;background:rgba(255,255,255,.03)}
+.md-progress{height:6px;border-radius:6px;background:rgba(255,255,255,.08);position:relative;cursor:pointer;overflow:hidden}
+.md-progress .fill{position:absolute;inset:0;width:0%;background:linear-gradient(90deg,var(--amber),var(--rose));border-radius:6px;transition:width .25s linear}
+.md-times{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3);font-family:var(--font-mono)}
+
+/* ============ Toast ============ */
+#toast{
+  position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);z-index:99;
+  background:var(--bg-2);border:1px solid var(--line-strong);color:var(--ink);
+  border-radius:var(--r-md);padding:11px 20px;font-size:13.5px;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.22,.9,.34,1);max-width:80vw;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast .t-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);margin-right:8px}
+
+/* ============ 移动端 Tabbar ============ */
+.tabbar{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  grid-template-columns:repeat(5,1fr);
+}
+.tab-btn{
+  background:none;border:none;color:var(--ink-3);display:flex;flex-direction:column;gap:2px;
+  align-items:center;font-size:10.5px;padding:5px 0;border-radius:var(--r-sm);transition:color .2s;
+}
+.tab-btn .ico{font-size:17px}
+.tab-btn[aria-current="page"]{color:var(--amber);font-weight:600}
+
+/* ============ 响应式 ============ */
+@media (max-width:1024px){
+  .hero{grid-template-columns:1fr}
+  .code-window{max-width:560px}
+  .two-col{grid-template-columns:1fr}
+  .history-panel{order:2}
+}
+@media (max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding:var(--s5) var(--s4) 210px}
+  .tabbar{display:grid}
+  .music-dock{right:var(--s3);left:var(--s3);bottom:calc(70px + env(safe-area-inset-bottom));width:auto}
+  .topbar{margin-bottom:var(--s4)}
+  .profile-banner{padding:var(--s5) var(--s4)}
+  .hero{padding:var(--s5) var(--s4)}
+}
+@media (max-width:480px){
+  .hero h1{font-size:26px}
+  .hero-stats{gap:var(--s4)}
+  .search-row{flex-direction:column}
+  .article-grid{grid-template-columns:1fr}
+  .card{padding:var(--s4)}
+  .post,.qa{padding:var(--s4);flex-wrap:wrap}
+  .qa-votes{display:flex;gap:10px;min-width:0;align-items:baseline}
+  .qa-votes b{font-size:15px}
+  .me-tabs{gap:0}
+  .me-tab{padding:9px 11px;font-size:13px}
+  .topbar .crumb{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-particles" aria-hidden="true"></canvas>
+
+<div class="app">
+  <!-- ===== 侧边栏 ===== -->
+  <aside class="sidebar" aria-label="主导航">
+    <div class="logo">
+      <div class="logo-mark" aria-hidden="true">&gt;_</div>
+      <div class="logo-text"><b>CodeVerse</b><span>终端诗学 · Tech Blog</span></div>
+    </div>
+    <nav class="nav" id="side-nav">
+      <button class="nav-btn" data-page="home"><span class="ico" aria-hidden="true">⌂</span>首页</button>
+      <button class="nav-btn" data-page="community"><span class="ico" aria-hidden="true">◈</span>社区</button>
+      <button class="nav-btn" data-page="qa"><span class="ico" aria-hidden="true">⌕</span>问答 · 搜索</button>
+      <button class="nav-btn" data-page="me"><span class="ico" aria-hidden="true">◉</span>我的</button>
+      <button class="nav-btn" data-page="about"><span class="ico" aria-hidden="true">✦</span>界面介绍</button>
+    </nav>
+    <div class="side-foot">
+      <p class="hint">// 单文件部署<br>断网亦可运行<br><b>♪ 音乐本地合成</b></p>
+    </div>
+  </aside>
+
+  <!-- ===== 主内容 ===== -->
+  <main class="main" id="main">
+    <div class="topbar">
+      <p class="crumb" id="crumb">~/codeverse/<b>home</b></p>
+      <div class="top-actions">
+        <button class="icon-btn" id="quick-search" title="快捷搜索">⌕ 搜索</button>
+        <button class="icon-btn" id="toggle-music-top" title="播放/暂停背景音乐">♪ 音乐</button>
+      </div>
+    </div>
+
+    <!-- ========== 首页 ========== -->
+    <section class="page active" id="page-home" aria-label="首页">
+      <div class="hero glass">
+        <div>
+          <p class="hero-kicker">$ npm run inspiration -- --mode=lofi</p>
+          <h1><span id="typewriter"></span><span class="cursor" aria-hidden="true"></span></h1>
+          <p class="lead">CodeVerse 是写给开发者的一封情书——在这里阅读深度技术长文、与同行交流碰撞、让每一个问题都得到认真的回答。</p>
+          <div class="hero-cta">
+            <button class="btn-primary" data-goto="qa">开始探索</button>
+            <button class="btn-ghost" data-goto="about">了解本站设计</button>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><b data-count="1286">0</b><span>深度文章</span></div>
+            <div class="stat"><b data-count="8492">0</b><span>问题已解答</span></div>
+            <div class="stat"><b data-count="36500">0</b><span>活跃开发者</span></div>
+          </div>
+        </div>
+        <div class="code-window" aria-label="站点理念代码示意">
+          <div class="code-titlebar">
+            <span class="dot r" aria-hidden="true"></span><span class="dot y" aria-hidden="true"></span><span class="dot g" aria-hidden="true"></span>
+            <span>codeverse.config.js</span>
+          </div>
+          <div class="code-body">
+<span class="k">export default</span> {<br>
+&nbsp;&nbsp;theme: <span class="s">'terminal-poetics'</span>,<br>
+&nbsp;&nbsp;palette: { primary: <span class="s">'#ffb454'</span>, bg: <span class="s">'#0a0e1a'</span> },<br>
+&nbsp;&nbsp;readers: { comfort: <span class="n">98</span>, serifMono: <span class="n">true</span> },<br>
+&nbsp;&nbsp;music: { genre: <span class="s">'lofi-synth'</span>, offline: <span class="n">true</span> },<br>
+&nbsp;&nbsp;<span class="f">mission</span>() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span> <span class="s">'让每一次阅读，像深夜写代码一样专注'</span>;<br>
+&nbsp;&nbsp;}<br>
+}<span class="c"> // ♥</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>精选文章</h2>
+        <span class="more">// curated · weekly</span>
+      </div>
+      <div class="chip-row" id="home-cats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="chip on" data-cat="全部">全部</button>
+        <button class="chip" data-cat="前端">前端</button>
+        <button class="chip" data-cat="后端">后端</button>
+        <button class="chip" data-cat="AI 工程">AI 工程</button>
+        <button class="chip" data-cat="底层">底层</button>
+      </div>
+      <div class="article-grid" id="article-grid"></div>
+    </section>
+
+    <!-- ========== 社区 ========== -->
+    <section class="page" id="page-community" aria-label="社区">
+      <div class="page-head">
+        <p class="eyebrow">// community</p>
+        <h1>社区广场</h1>
+        <p>与 36,500 名开发者一起讨论、求助、分享——技术因交流而自由。</p>
+      </div>
+      <div class="chip-row" id="post-cats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="chip on" data-pcat="全部">全部</button>
+        <button class="chip" data-pcat="讨论">讨论</button>
+        <button class="chip" data-pcat="求助">求助</button>
+        <button class="chip" data-pcat="分享">分享</button>
+        <button class="chip" data-pcat="招聘">招聘</button>
+      </div>
+      <div class="post-list" id="post-list"></div>
+    </section>
+
+    <!-- ========== 问答·搜索 ========== -->
+    <section class="page" id="page-qa" aria-label="问答与搜索">
+      <div class="page-head">
+        <p class="eyebrow">// q&amp;a · search</p>
+        <h1>问答与搜索</h1>
+        <p>输入关键词检索问答库；你的搜索记录会保存在本地浏览器中，可随时删除。按 <b style="font-family:var(--font-mono);color:var(--amber)">/</b> 快速聚焦搜索框。</p>
+      </div>
+      <div class="search-box glass">
+        <div class="search-row">
+          <input class="search-input" id="qa-input" type="search" placeholder="搜索问题、关键词或标签，例如：React、渲染性能…" aria-label="搜索问答">
+          <button class="btn-primary" id="qa-submit">搜索</button>
+        </div>
+        <div class="hot-row" id="hot-row">
+          <span class="lbl">热搜</span>
+          <button class="hot-chip">React Server Components</button>
+          <button class="hot-chip">CSS 容器查询</button>
+          <button class="hot-chip">WebGPU</button>
+          <button class="hot-chip">Rust 工具链</button>
+          <button class="hot-chip">TypeScript 5.x</button>
+          <button class="hot-chip">微前端</button>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="history-panel glass">
+          <h3>搜索记录 <button class="clear-btn" id="clear-history">清空</button></h3>
+          <div id="history-list" role="list"></div>
+        </div>
+        <div>
+          <p class="result-head" id="qa-result-head">// 共 8 条问答</p>
+          <div class="qa-list" id="qa-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 我的 ========== -->
+    <section class="page" id="page-me" aria-label="我的主页">
+      <div class="page-head">
+        <p class="eyebrow">// my space</p>
+        <h1>我的主页</h1>
+      </div>
+      <div class="profile-banner glass">
+        <div class="profile-row">
+          <div class="profile-ava" aria-hidden="true">晚</div>
+          <div class="profile-info">
+            <h2>林晚晴 <span class="tag c-amber" style="margin-left:8px;vertical-align:middle">Lv.9 签约作者</span></h2>
+            <p class="p-bio">前端工程师 / 开源爱好者。相信好的界面是善意的秩序，相信代码是这个时代的诗。正在写一本关于渲染原理的小书。</p>
+            <div class="profile-badges">
+              <span class="tag c-violet">✦ 年度创作者</span>
+              <span class="tag c-mint">◈ 社区维护者</span>
+              <span class="tag c-cyan">⌘ 专栏 · 终端诗学</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><b><em>42</em> 篇</b><span>原创文章</span></div>
+          <div class="stat"><b><em>318</em> 条</b><span>回答</span></div>
+          <div class="stat"><b><em>1.2k</em></b><span>获赞</span></div>
+          <div class="stat"><b><em>896</em></b><span>关注者</span></div>
+        </div>
+      </div>
+      <div class="me-tabs" role="tablist" aria-label="我的内容">
+        <button class="me-tab" role="tab" aria-selected="true" data-mtab="articles">我的文章</button>
+        <button class="me-tab" role="tab" aria-selected="false" data-mtab="answers">我的回答</button>
+        <button class="me-tab" role="tab" aria-selected="false" data-mtab="favorites">我的收藏</button>
+        <button class="me-tab" role="tab" aria-selected="false" data-mtab="followers">关注者</button>
+      </div>
+      <div class="me-panel active" id="mtab-articles"><div class="me-list" id="me-articles"></div></div>
+      <div class="me-panel" id="mtab-answers"><div class="me-list" id="me-answers"></div></div>
+      <div class="me-panel" id="mtab-favorites"><div class="me-list" id="me-favorites"></div></div>
+      <div class="me-panel" id="mtab-followers"><div class="follower-grid" id="me-followers"></div></div>
+    </section>
+
+    <!-- ========== 界面介绍 ========== -->
+    <section class="page" id="page-about" aria-label="界面介绍">
+      <div class="page-head">
+        <p class="eyebrow">// about this ui</p>
+        <h1>界面介绍</h1>
+        <p>本站以「终端诗学」为设计语言——把深夜写代码时那种专注、安静而温柔的氛围，做成一套完整的视觉系统。</p>
+      </div>
+
+      <div class="section-head"><h2>设计哲学</h2></div>
+      <div class="philosophy glass" style="margin-bottom:32px">
+        <blockquote><b>终端诗学</b>：等宽字体、琥珀色提示符、深靛蓝夜幕——所有视觉元素都取自开发者最熟悉的终端窗口，唤起「回到主场」的安全感。</blockquote>
+        <blockquote><b>克制的层次</b>：玻璃拟态面板只用于承载内容容器；强调色仅琥珀一种主导，薄荷/紫罗兰/玫瑰按语义使用，杜绝彩色噪音。</blockquote>
+        <blockquote><b>可感知的反馈</b>：卡片悬停浮起、音乐律动驱动粒子加速、每个操作都有 Toast 回声——界面的每一次呼吸都应被用户看见。</blockquote>
+      </div>
+
+      <div class="section-head"><h2>六大特性</h2></div>
+      <div class="about-grid" style="margin-bottom:32px">
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">📱</div><h3>响应式适配</h3><p>桌面侧边栏 / 平板折叠 / 手机底部 Tab + 抽屉式布局，375px 起全部可用。</p></div>
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">♪</div><h3>本地合成音乐</h3><p>背景音乐由 Web Audio API 实时合成（Lo-Fi 和弦 + 鼓组 + 旋律），无需任何音频文件，断网可听。</p></div>
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">✎</div><h3>打字机叙事</h3><p>首页标题逐字浮现并轮换文案，光标呼吸闪烁，营造「正在运行」的活感。</p></div>
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">⌕</div><h3>本地搜索记录</h3><p>搜索历史存储于浏览器 localStorage，支持逐条删除、一键清空，数据不出本机。</p></div>
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">◐</div><h3>无障碍基线</h3><p>正文对比度 ≥ 4.5:1，焦点可见，语义化标签 + aria 属性，尊重系统减弱动效偏好。</p></div>
+        <div class="about-card glass"><div class="a-ico" aria-hidden="true">⚡</div><h3>零依赖单文件</h3><p>不加载任何外部字体/脚本/图片，一个 HTML 文件即整站，可离线打开、任意静态托管。</p></div>
+      </div>
+
+      <div class="section-head"><h2>设计令牌 Design Tokens</h2><span class="more">// tokens.css</span></div>
+      <div class="token-grid glass" style="padding:20px;margin-bottom:32px" id="token-grid"></div>
+
+      <div class="section-head"><h2>技术栈与规格</h2></div>
+      <div class="glass" style="padding:8px 0;margin-bottom:32px">
+        <ul class="spec-list">
+          <li><b>HTML / CSS</b><span>语义化结构；CSS 自定义属性承载全部设计令牌；Grid + Flex 布局。</span></li>
+          <li><b>JavaScript</b><span>原生 ES2018+，无框架、无构建。路由为 hash 内存切换，状态即数据渲染。</span></li>
+          <li><b>Web Audio API</b><code>AudioContext · GainNode · BiquadFilter · AnalyserNode</code></li>
+          <li><b>Canvas</b><code>粒子背景 requestAnimationFrame · 音乐可视化频谱</code></li>
+          <li><b>本地存储</b><code>localStorage['cv_search_history']</code></li>
+          <li><b>断点</b><code>1024px（栅格折叠）· 768px（侧栏→Tabbar）· 480px（紧凑模式）</code></li>
+          <li><b>动效</b><code>prefers-reduced-motion 全局降级</code></li>
+        </ul>
+      </div>
+
+      <div class="section-head"><h2>交互清单</h2></div>
+      <div class="glass" style="padding:8px 0">
+        <ul class="spec-list">
+          <li><b>导航</b><span>侧边栏 / 底部 Tab / 顶栏快捷键切换五个页面，面包屑随路由更新。</span></li>
+          <li><b>快捷键</b><code>/ 聚焦搜索 · Enter 提交搜索</code></li>
+          <li><b>音乐坞</b><span>播放/暂停、上一首/下一首、进度条点击跳转、实时频谱可视化。</span></li>
+          <li><b>社区</b><span>分类筛选、点赞（可取消），全部即时反馈。</span></li>
+          <li><b>我的</b><span>四类内容 Tab 切换。</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== 移动端 Tabbar ===== -->
+<nav class="tabbar" aria-label="底部导航">
+  <button class="tab-btn" data-page="home"><span class="ico" aria-hidden="true">⌂</span>首页</button>
+  <button class="tab-btn" data-page="community"><span class="ico" aria-hidden="true">◈</span>社区</button>
+  <button class="tab-btn" data-page="qa"><span class="ico" aria-hidden="true">⌕</span>问答</button>
+  <button class="tab-btn" data-page="me"><span class="ico" aria-hidden="true">◉</span>我的</button>
+  <button class="tab-btn" data-page="about"><span class="ico" aria-hidden="true">✦</span>介绍</button>
+</nav>
+
+<!-- ===== 音乐坞 ===== -->
+<div class="music-dock" role="region" aria-label="背景音乐播放器">
+  <div class="md-top">
+    <div class="md-disc" id="md-disc" aria-hidden="true"></div>
+    <div class="md-info">
+      <b id="md-name">深夜编译 Midnight Build</b>
+      <span id="md-artist">CodeVerse Lo-Fi · 本地合成</span>
+    </div>
+    <div class="md-controls">
+      <button class="md-btn" id="md-prev" aria-label="上一首">◀◀</button>
+      <button class="md-btn play" id="md-play" aria-label="播放或暂停背景音乐">▶</button>
+      <button class="md-btn" id="md-next" aria-label="下一首">▶▶</button>
+    </div>
+  </div>
+  <canvas class="md-viz" id="md-viz" aria-hidden="true"></canvas>
+  <div class="md-progress" id="md-progress" role="slider" aria-label="播放进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+    <div class="fill" id="md-fill"></div>
+  </div>
+  <div class="md-times"><span id="md-cur">00:00</span><span id="md-dur">01:36</span></div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================
+   CodeVerse · 终端诗学 — 单文件应用脚本
+   ===================================================== */
+
+/* ---------- 通用工具 ---------- */
+const $  = (s, p) => (p || document).querySelector(s);
+const $$ = (s, p) => Array.from((p || document).querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let toastTimer = null;
+function toast(msg){
+  const t = $('#toast');
+  t.innerHTML = '<span class="t-dot" aria-hidden="true"></span>' + esc(msg);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------- 演示数据 ---------- */
+const ARTICLES = [
+  { cat:'前端', tags:['React','渲染'], color:'c-amber', title:'深入浏览器渲染管线：从一帧像素到 16.67ms 的战争', desc:'从 Parse HTML 到 Composite Layers，逐层拆解浏览器如何把你的组件变成像素，以及 Layout Thrashing 的三种解法。', author:'林晚晴', date:'10-18', views:'12.4k', likes:842 },
+  { cat:'后端', tags:['Rust','性能'], color:'c-mint', title:'用 Rust 重写日志管道：我们把写入延迟降了 93%', desc:'一次真实的性能工程复盘：火焰图定位、io_uring 落地、内存池设计，附完整压测数据与踩坑清单。', author:'陈北冥', date:'10-16', views:'9.8k', likes:621 },
+  { cat:'AI 工程', tags:['LLM','推理'], color:'c-violet', title:'大模型推理服务的容量规划：从 QPS 到 KV Cache', desc:'当业务流量洪峰到来，如何估算显存、批量与首 token 延迟？一篇写给前端工程师转 AI 岗的容量课。', author:'苏砚', date:'10-15', views:'15.2k', likes:1103 },
+  { cat:'前端', tags:['CSS','架构'], color:'c-cyan', title:'设计令牌工程化实践：让设计稿与代码共用同一套语言', desc:'Token 不是颜色表，而是一份契约。讲述我们如何用 CSS 自定义属性构建跨端设计系统。', author:'林晚晴', date:'10-12', views:'7.1k', likes:498 },
+  { cat:'底层', tags:['编译','WASM'], color:'c-rose', title:'写给应用工程师的编译原理速通：以 WASM 为例', desc:'不需要读完龙书也能理解编译器在做什么——词法、语法、IR 到目标代码，配可视化例子。', author:'江篱', date:'10-09', views:'6.6k', likes:455 },
+  { cat:'AI 工程', tags:['Agent','工程'], color:'c-amber', title:'构建可靠 Agent 的七个工程习惯', desc:'重试、幂等、观测、降级……把分布式系统的老智慧带进 Agent 编排，比换模型更重要。', author:'苏砚', date:'10-06', views:'11.3k', likes:902 },
+];
+const POSTS = [
+  { type:'讨论', title:'2026 年了，你们团队还在手动部署吗？聊聊你们的 CI/CD 现状', excerpt:'从 git push 到生产环境，最短 90 秒，最长三天。想收集一下大家的部署流水线形态……', author:'陈北冥', replies:128, likes:214, time:'2 小时前' },
+  { type:'求助', title:'Safari 下 backdrop-filter 模糊失效，查了三天没有头绪', excerpt:'同一个玻璃拟态面板，Chrome/Edge 完美，Safari 17 偶发不模糊。已排除层级与 will-change……', author:'白鹿', replies:36, likes:41, time:'5 小时前' },
+  { type:'分享', title:'开源｜我写了一个把 curl 命令转成可视化请求时间线的浏览器插件', excerpt:'调试接口超时终于不用盯 Network 面板了，支持导出 HAR 与团队分享。求 star 求反馈。', author:'江篱', replies:89, likes:356, time:'昨天' },
+  { type:'讨论', title:'TypeScript 的类型体操到底该学到什么程度才算够用？', excerpt:'组里新人把工具类型写成了艺术，但没人看得懂。想听听大家团队里的实践边界。', author:'苏砚', replies:167, likes:203, time:'昨天' },
+  { type:'招聘', title:'[杭州] 招资深前端 ×2：可视化方向，团队技术氛围极佳', excerpt:'做数据可视化编辑器，技术栈 React + WebGL，六险一金、弹性办公、每周技术分享。', author:'HR·青梧', replies:23, likes:38, time:'2 天前' },
+  { type:'分享', title:'写技术博客五年，我总结的 12 个排版与配图原则', excerpt:'为什么你的深度文章没人读完？大概率不是内容问题。全文 6000 字，附对比案例。', author:'林晚晴', replies:64, likes:489, time:'3 天前' },
+];
+const QAS = [
+  { title:'React Server Components 与传统 SSR 的本质区别是什么？', excerpt:'两者都能服务端渲染，但 RSC 的组件不经过 hydration、状态不进 bundle。理解这一点后，很多"何时用 RSC"的困惑会自然消解……', votes:328, answers:12, tags:['React','RSC'], author:'林晚晴', time:'10-18' },
+  { title:'CSS 容器查询(@container)在实际项目中最好用的场景？', excerpt:'组件级响应式——卡片在侧栏窄、在正文宽，容器查询让组件自己决定布局，不再依赖全局断点。', votes:214, answers:9, tags:['CSS','响应式'], author:'白鹿', time:'10-17' },
+  { title:'WebGPU 现在进入生产环境还差什么？', excerpt:'浏览器覆盖已经不错，但调试工具链、错误恢复和团队学习曲线仍是三座大山。分享我们的评估清单。', votes:186, answers:15, tags:['WebGPU','图形'], author:'江篱', time:'10-15' },
+  { title:'前端渲染性能优化的检查清单（2026 版）', excerpt:'从 LCP、INP 到长任务切片，30 项可执行的检查项，按投入产出比排序，附检测代码片段。', votes:402, answers:21, tags:['渲染性能','优化'], author:'陈北冥', time:'10-14' },
+  { title:'Rust 写的前端工具链(如 SWC/Turbopack)为什么快？', excerpt:'不只是"语言快"：零成本抽象、显式内存布局、并行安全三者合力。拆一篇编译器视角的解读。', votes:276, answers:8, tags:['Rust','工具链'], author:'陈北冥', time:'10-12' },
+  { title:'TypeScript 5.x 的装饰器与旧版实验性装饰器如何迁移？', excerpt:'标准装饰器语义变了：初始化时机、元数据 API 都不同。给出兼容两种写法的渐进迁移方案。', votes:158, answers:7, tags:['TypeScript'], author:'苏砚', time:'10-10' },
+  { title:'微前端在 2026 年还值得引入吗？什么规模下收益为正？', excerpt:'当团队 < 20 人时，微前端的复杂度税通常超过收益；跨多团队共享大型应用时才显著为正。', votes:233, answers:18, tags:['微前端','架构'], author:'林晚晴', time:'10-08' },
+  { title:'大模型应用的前端架构：流式渲染与组件级增量更新怎么做？', excerpt:'SSE/流式接口 + 稳定 DOM 锚点 + 批量 requestAnimationFrame 更新，一套可复用的渲染策略。', votes:301, answers:11, tags:['AI 工程','流式渲染'], author:'苏砚', time:'10-05' },
+];
+const ME_ARTICLES = [
+  { t:'深入浏览器渲染管线：从一帧像素到 16.67ms 的战争', m:'10-18 · 阅读 12.4k · 赞 842' },
+  { t:'设计令牌工程化实践：让设计稿与代码共用同一套语言', m:'10-12 · 阅读 7.1k · 赞 498' },
+  { t:'微前端在 2026 年还值得引入吗？', m:'10-08 · 阅读 5.2k · 赞 401' },
+  { t:'写技术博客五年，我总结的 12 个排版与配图原则', m:'09-28 · 阅读 9.9k · 赞 489' },
+];
+const ME_ANSWERS = [
+  { t:'回答：Safari 下 backdrop-filter 模糊失效', m:'10-20 · 被采纳 · 赞 67' },
+  { t:'回答：React Server Components 与 SSR 的区别', m:'10-18 · 赞 128' },
+  { t:'回答：容器查询的最佳实践场景', m:'10-17 · 被采纳 · 赞 89' },
+  { t:'回答：前端如何平滑学习 WebGL/WebGPU', m:'10-11 · 赞 54' },
+];
+const ME_FAVORITES = [
+  { t:'★ 用 Rust 重写日志管道：我们把写入延迟降了 93%', m:'收藏于 10-16 · 后端' },
+  { t:'★ 构建可靠 Agent 的七个工程习惯', m:'收藏于 10-06 · AI 工程' },
+  { t:'★ 写给应用工程师的编译原理速通', m:'收藏于 10-09 · 底层' },
+];
+const FOLLOWERS = [
+  { n:'陈北冥', d:'基础架构 · 后端' }, { n:'苏砚', d:'AI 平台 · 推理' },
+  { n:'江篱', d:'图形渲染 · WebGL' }, { n:'白鹿', d:'用户体验 · CSS' },
+  { n:'青梧', d:'技术招聘 · HRBP' }, { n:'Kafei', d:'独立开发者' },
+  { n:'星野', d:'大厂前端 · 全栈' }, { n:'洛尘', d:'开源社区维护者' },
+];
+const TOKENS = [
+  ['背景 · 深靛','#0a0e1a'],['面板 · 靛蓝','#111830'],['主文本','#e8ecf8'],['次级文本','#aab4d4'],
+  ['强调 · 琥珀','#ffb454'],['语义 · 薄荷','#4ade80'],['语义 · 紫罗兰','#a78bfa'],['语义 · 玫瑰','#fb7185'],
+];
+const AVA_COLORS = ['#ffb454','#4ade80','#a78bfa','#fb7185','#67e8f9','#f9a8d4'];
+
+/* ---------- 路由 ---------- */
+const PAGE_TITLES = { home:'home', community:'community', qa:'q-and-a', me:'profile', about:'about-ui' };
+function goPage(id){
+  $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + id));
+  $$('.nav-btn, .tab-btn').forEach(b => {
+    if (b.dataset.page === id) b.setAttribute('aria-current','page');
+    else b.removeAttribute('aria-current');
+  });
+  $('#crumb').innerHTML = '~/codeverse/<b>' + (PAGE_TITLES[id] || id) + '</b>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$$('.nav-btn, .tab-btn').forEach(b => b.addEventListener('click', () => goPage(b.dataset.page)));
+$$('[data-goto]').forEach(b => b.addEventListener('click', () => goPage(b.dataset.goto)));
+$('#quick-search').addEventListener('click', () => { goPage('qa'); $('#qa-input').focus(); });
+
+/* ---------- 打字机 ---------- */
+(function typewriter(){
+  const phrases = ['为热爱代码的人，\n写一首终端里的诗。','把深夜的专注，\n做成一整片界面。','每一个问题，\n都值得被认真回答。'];
+  const el = $('#typewriter');
+  let pi = 0, ci = 0, deleting = false;
+  function tick(){
+    const cur = phrases[pi];
+    if (!deleting){
+      ci++;
+      el.innerHTML = esc(cur.slice(0, ci)).replace(/\n/g,'<br>');
+      if (ci === cur.length){ deleting = true; setTimeout(tick, 2600); return; }
+      setTimeout(tick, 90 + Math.random()*70);
+    } else {
+      ci--;
+      el.innerHTML = esc(cur.slice(0, ci)).replace(/\n/g,'<br>');
+      if (ci === 0){ deleting = false; pi = (pi+1) % phrases.length; setTimeout(tick, 500); return; }
+      setTimeout(tick, 38);
+    }
+  }
+  tick();
+})();
+
+/* ---------- 数字滚动 ---------- */
+function countUp(el){
+  const target = +el.dataset.count, dur = 1400, t0 = performance.now();
+  function step(t){
+    const p = Math.min(Math.max((t - t0)/dur, 0), 1), eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(target * eased).toLocaleString() + (target >= 1000 ? '+' : '');
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+setTimeout(() => $$('.hero-stats b').forEach(countUp), 300);
+
+/* ---------- 粒子背景 ---------- */
+(function particles(){
+  const cv = $('#bg-particles'), ctx = cv.getContext('2d');
+  let W, H, parts = [];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function resize(){
+    W = cv.width = innerWidth; H = cv.height = innerHeight;
+    const n = Math.min(90, Math.floor(W * H / 16000));
+    parts = Array.from({length:n}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-.5)*.28, vy: (Math.random()-.5)*.28,
+      r: Math.random()*1.8 + .5,
+      c: ['255,180,84','167,139,250','103,232,249','255,255,255'][Math.floor(Math.random()*4)],
+      a: Math.random()*.5 + .15,
+    }));
+  }
+  addEventListener('resize', resize, { passive:true }); resize();
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    const boost = window.__musicPlaying ? 2.4 : 1;
+    for (const p of parts){
+      if (!reduced){ p.x += p.vx * boost; p.y += p.vy * boost; }
+      if (p.x < -10) p.x = W+10; if (p.x > W+10) p.x = -10;
+      if (p.y < -10) p.y = H+10; if (p.y > H+10) p.y = -10;
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(' + p.c + ',' + p.a + ')';
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  if (!reduced) frame(); else { ctx.clearRect(0,0,W,H); }
+})();
+
+/* ---------- 首页文章渲染 ---------- */
+function avaColor(name){ let h = 0; for (const c of name) h = (h*31 + c.charCodeAt(0)) >>> 0; return AVA_COLORS[h % AVA_COLORS.length]; }
+function renderArticles(cat){
+  const list = cat === '全部' ? ARTICLES : ARTICLES.filter(a => a.cat === cat);
+  $('#article-grid').innerHTML = list.map((a,i) =>
+    '<article class="card glass">' +
+      '<div class="tags"><span class="tag ' + a.color + '">' + esc(a.cat) + '</span>' +
+        a.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div>' +
+      '<h3>' + esc(a.title) + '</h3><p>' + esc(a.desc) + '</p>' +
+      '<div class="card-foot">' +
+        '<span class="avatar" style="background:' + avaColor(a.author) + '">' + esc(a.author[0]) + '</span>' +
+        '<span>' + esc(a.author) + '</span><span class="spacer"></span>' +
+        '<span>👁 ' + a.views + '</span><span>♥ ' + a.likes + '</span><span>' + a.date + '</span>' +
+      '</div>' +
+    '</article>').join('');
+}
+$$('#home-cats .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#home-cats .chip').forEach(x => { x.classList.remove('on'); x.removeAttribute('aria-pressed'); });
+  c.classList.add('on'); c.setAttribute('aria-pressed','true');
+  renderArticles(c.dataset.cat);
+}));
+renderArticles('全部');
+
+/* ---------- 社区渲染 ---------- */
+const TYPE_CLS = { '讨论':'discuss', '求助':'help', '分享':'share', '招聘':'job' };
+const liked = new Set();
+function renderPosts(cat){
+  const list = cat === '全部' ? POSTS : POSTS.filter(p => p.type === cat);
+  $('#post-list').innerHTML = list.map(p => {
+    const key = p.title.slice(0, 12);
+    const isLiked = liked.has(key);
+    return '<article class="post glass">' +
+      '<span class="p-type ' + TYPE_CLS[p.type] + '">' + esc(p.type) + '</span>' +
+      '<div class="post-body"><h3>' + esc(p.title) + '</h3><p class="p-excerpt">' + esc(p.excerpt) + '</p>' +
+        '<div class="post-meta"><span>@' + esc(p.author) + '</span><span>💬 ' + p.replies + ' 回复</span><span>' + p.time + '</span></div></div>' +
+      '<button class="like-btn" data-like="' + esc(key) + '" aria-pressed="' + isLiked + '">♥ ' + (p.likes + (isLiked ? 1 : 0)) + '</button>' +
+    '</article>';
+  }).join('');
+}
+$$('#post-cats .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#post-cats .chip').forEach(x => { x.classList.remove('on'); x.removeAttribute('aria-pressed'); });
+  c.classList.add('on'); c.setAttribute('aria-pressed','true');
+  renderPosts(c.dataset.pcat);
+}));
+renderPosts('全部');
+$('#post-list').addEventListener('click', e => {
+  const btn = e.target.closest('.like-btn'); if (!btn) return;
+  const key = btn.dataset.like, on = !liked.has(key);
+  if (on) liked.add(key); else liked.delete(key);
+  btn.setAttribute('aria-pressed', on);
+  const n = btn.textContent.replace(/\D/g,'');
+  btn.textContent = '♥ ' + (+n + (on ? 1 : -1));
+  toast(on ? '已点赞 ♥ 感谢你的共鸣' : '已取消点赞');
+});
+
+/* ---------- 问答搜索 + 历史 ---------- */
+const HKEY = 'cv_search_history';
+function getHistory(){ try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch(e){ return []; } }
+function fmtTime(ts){
+  const d = new Date(ts), now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toTimeString().slice(0,5);
+  return (d.getMonth()+1) + '-' + d.getDate();
+}
+function renderHistory(){
+  const h = getHistory();
+  if (!h.length){ $('#history-list').innerHTML = '<p class="history-empty">// 暂无搜索记录<br>你的历史只保存在本机</p>'; return; }
+  $('#history-list').innerHTML = h.map((it,i) =>
+    '<button class="history-item" data-hsearch="' + i + '" role="listitem">' +
+      '<span aria-hidden="true">⌕</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(it.q) + '</span>' +
+      '<span class="h-time">' + fmtTime(it.t) + '</span>' +
+      '<span class="h-del" data-hdel="' + i + '" role="button" aria-label="删除该条记录" title="删除">✕</span>' +
+    '</button>').join('');
+}
+function addHistory(q){
+  let h = getHistory().filter(it => it.q !== q);
+  h.unshift({ q, t: Date.now() });
+  if (h.length > 8) h = h.slice(0, 8);
+  localStorage.setItem(HKEY, JSON.stringify(h));
+  renderHistory();
+}
+function hl(text, kw){
+  if (!kw) return esc(text);
+  const i = text.toLowerCase().indexOf(kw.toLowerCase());
+  if (i < 0) return esc(text);
+  return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i, i+kw.length)) + '</mark>' + esc(text.slice(i+kw.length));
+}
+function renderQA(kw){
+  const k = (kw || '').trim().toLowerCase();
+  const list = k ? QAS.filter(q =>
+    q.title.toLowerCase().includes(k) || q.excerpt.toLowerCase().includes(k) ||
+    q.tags.some(t => t.toLowerCase().includes(k))) : QAS;
+  $('#qa-result-head').innerHTML = k ? '// “<b>' + esc(kw) + '</b>” 命中 ' + list.length + ' 条问答' : '// 共 ' + QAS.length + ' 条问答';
+  if (!list.length){
+    $('#qa-list').innerHTML = '<div class="empty-state glass">404 · 没有找到相关问题<br><br>换个关键词试试，例如 “React” 或 “性能”</div>';
+    return;
+  }
+  $('#qa-list').innerHTML = list.map(q =>
+    '<article class="qa glass">' +
+      '<div class="qa-votes"><b>▲ ' + q.votes + '</b><span>投票</span></div>' +
+      '<div class="qa-body"><h3>' + hl(q.title, k) + '</h3><p class="qa-excerpt">' + hl(q.excerpt, k) + '</p>' +
+        '<div class="qa-meta"><span>@' + esc(q.author) + '</span><span>' + q.time + '</span>' +
+        q.tags.map(t => '<span class="tag">' + hl(t, k) + '</span>').join('') + '</div></div>' +
+      '<span class="qa-answers">' + q.answers + ' 回答</span>' +
+    '</article>').join('');
+}
+function doSearch(q){
+  q = (q || '').trim();
+  if (!q){ toast('请输入搜索关键词'); $('#qa-input').focus(); return; }
+  addHistory(q); renderQA(q);
+}
+$('#qa-submit').addEventListener('click', () => doSearch($('#qa-input').value));
+$('#qa-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(e.target.value); });
+$$('#hot-row .hot-chip').forEach(c => c.addEventListener('click', () => { $('#qa-input').value = c.textContent; doSearch(c.textContent); }));
+$('#history-list').addEventListener('click', e => {
+  const del = e.target.closest('.h-del');
+  if (del){
+    e.stopPropagation();
+    const h = getHistory(); h.splice(+del.dataset.hdel, 1);
+    localStorage.setItem(HKEY, JSON.stringify(h));
+    renderHistory(); toast('已删除该条记录'); return;
+  }
+  const item = e.target.closest('.history-item');
+  if (item){ const q = getHistory()[+item.dataset.hsearch].q; $('#qa-input').value = q; renderQA(q); }
+});
+$('#clear-history').addEventListener('click', () => {
+  if (!getHistory().length){ toast('记录已经是空的'); return; }
+  localStorage.removeItem(HKEY); renderHistory(); toast('已清空全部搜索记录');
+});
+renderHistory(); renderQA('');
+
+/* ---------- 我的 · Tab ---------- */
+function renderMe(){
+  $('#me-articles').innerHTML = ME_ARTICLES.map(a =>
+    '<div class="me-item glass"><div class="mi-body"><h4>' + esc(a.t) + '</h4><p>' + esc(a.m) + '</p></div><span class="tag c-amber">原创</span></div>').join('');
+  $('#me-answers').innerHTML = ME_ANSWERS.map(a =>
+    '<div class="me-item glass"><div class="mi-body"><h4>' + esc(a.t) + '</h4><p>' + esc(a.m) + '</p></div><span class="tag c-cyan">回答</span></div>').join('');
+  $('#me-favorites').innerHTML = ME_FAVORITES.map(a =>
+    '<div class="me-item glass"><div class="mi-body"><h4>' + esc(a.t) + '</h4><p>' + esc(a.m) + '</p></div></div>').join('');
+  $('#me-followers').innerHTML = FOLLOWERS.map(f =>
+    '<div class="follower glass"><span class="avatar" style="background:' + avaColor(f.n) + ';width:34px;height:34px">' + esc(f.n[0]) + '</span>' +
+    '<div><b>' + esc(f.n) + '</b><span>' + esc(f.d) + '</span></div></div>').join('');
+}
+renderMe();
+$$('.me-tab').forEach(t => t.addEventListener('click', () => {
+  $$('.me-tab').forEach(x => x.setAttribute('aria-selected','false'));
+  t.setAttribute('aria-selected','true');
+  $$('.me-panel').forEach(p => p.classList.toggle('active', p.id === 'mtab-' + t.dataset.mtab));
+}));
+
+/* ---------- Token 色板渲染 ---------- */
+$('#token-grid').innerHTML = TOKENS.map(t =>
+  '<div class="token-cell"><div class="token-swatch" style="background:' + t[1] + '"></div>' +
+  '<b>' + esc(t[0]) + '</b><span>' + t[1] + '</span></div>').join('');
+
+/* ---------- 键盘快捷键 ---------- */
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
+    e.preventDefault(); goPage('qa'); $('#qa-input').focus();
+  }
+});
+
+/* =====================================================
+   音乐引擎 · Web Audio 本地合成 Lo-Fi
+   ===================================================== */
+const Music = (function(){
+  const TRACKS = [
+    { name:'深夜编译 Midnight Build',   bpm:72, root:220.00, chords:[[0,3,7,12],[-4,0,3,8],[-2,2,5,10],[-5,-1,2,7]],  scale:[0,3,5,7,10],  wave:'sine' },
+    { name:'像素雨 Pixel Rain',          bpm:66, root:196.00, chords:[[0,4,7,11],[-3,0,4,9],[2,5,9,12],[-5,0,4,7]],    scale:[0,2,4,7,9],   wave:'triangle' },
+    { name:'终端低语 Terminal Whisper',  bpm:78, root:233.08, chords:[[0,3,7,10],[5,9,12,15],[-2,1,5,8],[-4,0,3,7]],   scale:[0,3,5,8,10],  wave:'sine' },
+    { name:'重启黎明 Reboot Dawn',       bpm:84, root:174.61, chords:[[0,3,7,12],[3,7,10,14],[-2,2,5,9],[-4,0,3,8]],   scale:[0,2,3,7,9],   wave:'triangle' },
+  ];
+  const DURATION = 96; // 每首虚拟时长（秒）
+  let ctx = null, master = null, analyser = null, schedTimer = null;
+  let playing = false, trackIdx = 0, barIdx = 0, nextBarTime = 0;
+  let startedAt = 0, elapsedBefore = 0, noise = null;
+
+  function ensure(){
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0.6;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 64; analyser.smoothingTimeConstant = 0.82;
+    master.connect(analyser); analyser.connect(ctx.destination);
+  }
+  function noiseBuf(){
+    if (noise) return noise;
+    noise = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
+    const d = noise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return noise;
+  }
+  const semi = s => TRACKS[trackIdx].root * Math.pow(2, s / 12);
+  function tone(freq, t, dur, type, vol){
+    const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1800;
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + dur * 0.3);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function kick(t){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(130, t);
+    o.frequency.exponentialRampToValueAtTime(44, t + 0.13);
+    g.gain.setValueAtTime(0.5, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.3);
+  }
+  function hat(t, vol){
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf();
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6500;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    s.connect(hp); hp.connect(g); g.connect(master);
+    s.start(t); s.stop(t + 0.08);
+  }
+  function scheduleBar(){
+    const tr = TRACKS[trackIdx], spb = 60 / tr.bpm, bar = spb * 4;
+    while (nextBarTime < ctx.currentTime + 0.55){
+      const t0 = nextBarTime, chord = tr.chords[barIdx % tr.chords.length];
+      chord.forEach(s => tone(semi(s), t0, bar * 0.92, tr.wave, 0.05));            // 铺底和弦
+      tone(semi(chord[0] - 12), t0, spb * 1.8, 'triangle', 0.13);                  // 低音
+      tone(semi(chord[0] - 12), t0 + spb * 2, spb * 1.8, 'triangle', 0.10);
+      kick(t0); kick(t0 + spb * 2.5);                                              // 底鼓
+      for (let i = 0; i < 8; i++) hat(t0 + i * spb / 2, i % 2 ? 0.045 : 0.085);    // 踩镲
+      for (let i = 0; i < 4; i++)                                                  // 随机旋律
+        if (Math.random() < 0.55){
+          const sc = tr.scale, n = sc[Math.floor(Math.random() * sc.length)] + (Math.random() < 0.3 ? 12 : 0);
+          tone(semi(n), t0 + i * spb, 0.42, tr.wave, 0.05);
+        }
+      barIdx++; nextBarTime += bar;
+    }
+  }
+  function elapsed(){
+    if (!ctx || !playing) return elapsedBefore;
+    return elapsedBefore + (ctx.currentTime - startedAt);
+  }
+  function updateUI(){
+    const el = Math.min(elapsed(), DURATION), p = el / DURATION;
+    $('#md-fill').style.width = (p * 100).toFixed(2) + '%';
+    $('#md-progress').setAttribute('aria-valuenow', Math.round(p * 100));
+    $('#md-cur').textContent = fmt(el);
+    $('#md-dur').textContent = fmt(DURATION);
+  }
+  function fmt(s){ s = Math.max(0, Math.floor(s)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+  function setTrackUI(){
+    $('#md-name').textContent = TRACKS[trackIdx].name;
+    $('#md-artist').textContent = 'Track ' + (trackIdx+1) + '/4 · CodeVerse Lo-Fi 本地合成';
+    updateUI();
+  }
+  function play(){
+    ensure();
+    if (ctx.state === 'suspended') ctx.resume();
+    startedAt = ctx.currentTime;
+    nextBarTime = ctx.currentTime + 0.06;
+    schedTimer = setInterval(() => {
+      scheduleBar();
+      if (elapsed() >= DURATION) nextTrack(true);
+    }, 200);
+    playing = true; window.__musicPlaying = true;
+    $('#md-play').textContent = '❚❚';
+    $('#md-disc').classList.add('spin');
+    vizLoop();
+  }
+  function pause(){
+    if (!ctx) return;
+    elapsedBefore = elapsed();
+    clearInterval(schedTimer); schedTimer = null;
+    ctx.suspend();
+    playing = false; window.__musicPlaying = false;
+    $('#md-play').textContent = '▶';
+    $('#md-disc').classList.remove('spin');
+    updateUI();
+  }
+  function nextTrack(auto){
+    elapsedBefore = 0; barIdx = 0; trackIdx = (trackIdx + 1) % TRACKS.length;
+    if (playing){ nextBarTime = ctx.currentTime + 0.06; startedAt = ctx.currentTime; }
+    setTrackUI();
+    if (!auto) toast('♪ ' + TRACKS[trackIdx].name);
+  }
+  function prevTrack(){
+    elapsedBefore = 0; barIdx = 0; trackIdx = (trackIdx - 1 + TRACKS.length) % TRACKS.length;
+    if (playing){ nextBarTime = ctx.currentTime + 0.06; startedAt = ctx.currentTime; }
+    setTrackUI();
+    toast('♪ ' + TRACKS[trackIdx].name);
+  }
+  function seek(ratio){
+    const target = Math.max(0, Math.min(0.99, ratio)) * DURATION;
+    const tr = TRACKS[trackIdx];
+    barIdx = Math.floor(target / (60 / tr.bpm * 4));
+    if (playing){
+      elapsedBefore = target; startedAt = ctx.currentTime; nextBarTime = ctx.currentTime + 0.06;
+    } else { elapsedBefore = target; updateUI(); }
+  }
+  /* 频谱可视化 */
+  const vizCv = $('#md-viz'); const vctx = vizCv.getContext('2d');
+  function sizeViz(){
+    const r = vizCv.getBoundingClientRect();
+    vizCv.width = r.width * devicePixelRatio; vizCv.height = r.height * devicePixelRatio;
+  }
+  addEventListener('resize', sizeViz, { passive:true }); setTimeout(sizeViz, 100);
+  function vizLoop(){
+    if (!playing){ vctx.clearRect(0, 0, vizCv.width, vizCv.height); return; }
+    requestAnimationFrame(vizLoop);
+    const n = analyser.frequencyBinCount, data = new Uint8Array(n);
+    analyser.getByteFrequencyData(data);
+    const W = vizCv.width, H = vizCv.height, bw = W / n;
+    vctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < n; i++){
+      const h = (data[i] / 255) * H * 0.95;
+      const grad = vctx.createLinearGradient(0, H, 0, H - h);
+      grad.addColorStop(0, 'rgba(255,180,84,.9)'); grad.addColorStop(1, 'rgba(251,113,133,.9)');
+      vctx.fillStyle = grad;
+      vctx.fillRect(i * bw + 1, H - h, Math.max(2, bw - 2), h);
+    }
+  }
+  function toggle(){ playing ? pause() : (play(), toast('♪ 已开启本地合成音乐')); }
+  return { toggle, nextTrack, prevTrack, seek, elapsed, playing: () => playing };
+})();
+
+$('#md-play').addEventListener('click', Music.toggle);
+$('#toggle-music-top').addEventListener('click', Music.toggle);
+$('#md-next').addEventListener('click', () => Music.nextTrack(false));
+$('#md-prev').addEventListener('click', Music.prevTrack);
+$('#md-progress').addEventListener('click', e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  Music.seek((e.clientX - r.left) / r.width);
+});
+$('#md-progress').addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+    const cur = Music.elapsed() / 96;
+    Music.seek(cur + (e.key === 'ArrowRight' ? 0.05 : -0.05));
+    e.preventDefault();
+  }
+});
+</script>
+</body>
+</html>
